@@ -4,7 +4,7 @@
 #     Version: 1.3.0
 #     Website: http://source.perl.free.fr (in french)
 #        Date: 10/03/2013
-#     License: GPL (www.gnu.org)
+#     License: GPL v3 (http://www.gnu.org/licenses/quick-guide-gplv3.en.html)
 # Description: Client ModBus / TCP command line
 #              Support functions 3 and 16 (class 0)
 #              1,2,4,5,6 (Class 1)

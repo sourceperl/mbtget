@@ -4,8 +4,8 @@ This is a simple perl script for make some modbus transaction from the command l
 
 ## Setup (for Linux):
 1. just copy "mbtget.pl" to /usr/local/bin/ (it's the script path for user scripts in debian system).
-2. set chmod +x /usr/local/bin/mbtget.pl to set execution flag
-2. set mv /usr/local/bin/mbtget.pl /usr/local/bin/mbtget for have a tiny name
+2. set chmod +x /usr/local/bin/mbtget.pl to set execution flag.
+2. set mv /usr/local/bin/mbtget.pl /usr/local/bin/mbtget for have a tiny name.
 
 ## Usage example
 
@@ -43,3 +43,6 @@ This is a simple perl script for make some modbus transaction from the command l
     
     word write ok
 
+## License
+
+Software under version 3 of the GNU General Public License (http://www.gnu.org/licenses/quick-guide-gplv3.en.html).
