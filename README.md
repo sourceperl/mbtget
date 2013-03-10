@@ -5,19 +5,20 @@ This is a simple perl script for make some modbus transaction from the command l
 ## Setup (for Linux):
 1. just copy "mbtget.pl" to /usr/local/bin/ (it's the script path for user scripts in debian system).
 2. set chmod +x /usr/local/bin/mbtget.pl to set execution flag
+2. set mv /usr/local/bin/mbtget.pl /usr/local/bin/mbtget for have a tiny name
 
 ## Usage example
 
 ### read a word data at address 1000 on modbus server 127.0.0.1
 
-    [root@spartacus root]# mbtget -a 1000 127.0.0.1
+    pi@raspberrypi ~ $ mbtget -a 1000 127.0.0.1
     
     values:
     1 (ad 01000): 52544
 
 ### read 10 words data at address 1000 on modbus server plc-1.domaine.net
     
-    [root@spartacus root]# mbtget -n 10 -a 1000 plc-1.domaine.net
+    pi@raspberrypi ~ $ mbtget -n 10 -a 1000 plc-1.domaine.net
 
     values:
     1 (ad 01000): 52544
@@ -33,7 +34,7 @@ This is a simple perl script for make some modbus transaction from the command l
  
 ### write a word value of 333 at address 1000 on modbus server 127.0.0.1 with dump mode active
 
-    [root@spartacus root]# mbtget -w6 333 -a 1000 -d 127.0.0.1 
+    pi@raspberrypi ~ $ mbtget -w6 333 -a 1000 -d 127.0.0.1 
     Tx
     [10 01 00 00 00 06 01] 06 03 E8 01 4D
     
@@ -41,4 +42,4 @@ This is a simple perl script for make some modbus transaction from the command l
     [10 01 00 00 00 06 01] 06 03 E8 01 4D
     
     word write ok
-    
+
