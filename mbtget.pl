@@ -8,7 +8,7 @@
 # Description: Client ModBus / TCP command line
 #              Support functions 3 and 16 (class 0)
 #              1,2,4,5,6 (Class 1)
-#     Charset: UTF-8 (without BOM), unix end of line
+#     Charset: us-ascii, unix end of line
 
 # changelog
 # 1.3.0: comment and "-h" text is now in english
@@ -16,7 +16,6 @@
 # 1.1.4: added \ - the regular expression hostname (remote hosts as "exp-1.dom")
 
 # TODO: 1,2,3 and 4 functions: check the number of words received
-# TODO: Integrating POD documentation in the source code
 
 use strict;
 use Socket;
