@@ -3,9 +3,8 @@
 This is a simple perl script for make some modbus transaction from the command line. 
 
 ## Setup (for Linux):
-1. just copy "mbtget.pl" to /usr/local/bin/ (it's the script path for user scripts in debian system).
-2. set chmod +x /usr/local/bin/mbtget.pl to set execution flag.
-2. set mv /usr/local/bin/mbtget.pl /usr/local/bin/mbtget for have a tiny name.
+1. just copy mbtget to /usr/local/bin/ (it's the script path for user scripts in debian system).
+2. set chmod +x /usr/local/bin/mbtget to set execution flag.
 
 ## Usage example
 
