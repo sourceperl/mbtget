@@ -8,6 +8,10 @@ This is a simple perl script for make some modbus transaction from the command l
 
 ## Usage example
 
+### read mbtget help
+
+    pi@raspberrypi ~ $ mbtget -h
+    
 ### read a word data at address 1000 on modbus server 127.0.0.1
 
     pi@raspberrypi ~ $ mbtget -a 1000 127.0.0.1
