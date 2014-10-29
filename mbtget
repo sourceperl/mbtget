@@ -283,7 +283,8 @@ recv(SERVER, $rx_buffer, 7, 0); $rx_frame = $rx_buffer;
 # header decoding
 ($rx_hd_tr_id, $rx_hd_pr_id, $rx_hd_length, $rx_hd_unit_id) = unpack "nnnC", $rx_buffer;
 # is header correct ?
-if (!(($rx_hd_tr_id == $tx_hd_tr_id) && ($rx_hd_pr_id == 0) &&
+if (!(($rx_hd_tr_id || $rx_hd_pr_id || $rx_hd_length || $rx_hd_unit_id) &&
+      ($rx_hd_tr_id == $tx_hd_tr_id) && ($rx_hd_pr_id == 0) &&
       ($rx_hd_length < 256) && ($rx_hd_unit_id == $tx_hd_unit_id))) {
   close SERVER;
   dump_frame('Rx', $rx_frame) if ($opt_dump_mode);
