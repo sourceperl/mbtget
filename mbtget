@@ -1,9 +1,10 @@
 #!/usr/bin/perl -w
 
 # Client ModBus / TCP class 1
-#     Version: 1.4.0
-#     Website: http://source.perl.free.fr (in french)
-#        Date: 10/03/2013
+#     Version: 1.4.1
+#     Website: https://github.com/sourceperl/mbtget
+#              http://source.perl.free.fr (in french)
+#        Date: 29/10/2014
 #     License: GPL v3 (http://www.gnu.org/licenses/quick-guide-gplv3.en.html)
 # Description: Client ModBus / TCP command line
 #              Support functions 3 and 16 (class 0)
@@ -11,6 +12,8 @@
 #     Charset: us-ascii, unix end of line
 
 # changelog
+# 1.4.1: better response handling for malformed responses
+#        (see joswr1ght pull request #1)
 # 1.4.0: add "-2c" for set "two's complement" mode (neg. value) on reads regs
 # 1.3.0: comment and "-h" text is now in english
 # 1.2.0: changing headers for the source code publication
@@ -22,7 +25,7 @@ use strict;
 use Socket;
 
 # constant
-my $MBGET_VERSION            = '1.4.0';
+my $MBGET_VERSION            = '1.4.1';
 my $MBGET_USAGE              =
 'usage : mbtget [-hvdsf] [-2c]
                [-u unit_id] [-a address] [-n number_value]
