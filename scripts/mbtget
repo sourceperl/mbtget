@@ -1,17 +1,18 @@
 #!/usr/bin/perl -w
 
 # Client ModBus / TCP class 1
-#     Version: 1.4.1
+#     Version: 1.4.2
 #     Website: https://github.com/sourceperl/mbtget
 #              http://source.perl.free.fr (in french)
 #        Date: 29/10/2014
-#     License: GPL v3 (http://www.gnu.org/licenses/quick-guide-gplv3.en.html)
+#     License: MIT
 # Description: Client ModBus / TCP command line
 #              Support functions 3 and 16 (class 0)
 #              1,2,4,5,6 (Class 1)
 #     Charset: us-ascii, unix end of line
 
 # changelog
+# 1.4.2: add Makefile.PL for easy install on all perl platforms
 # 1.4.1: better response handling for malformed responses
 #        (see joswr1ght pull request #1)
 # 1.4.0: add "-2c" for set "two's complement" mode (neg. value) on reads regs
@@ -25,8 +26,8 @@ use strict;
 use Socket;
 
 # constant
-my $MBGET_VERSION            = '1.4.1';
-my $MBGET_USAGE              =
+our $VERSION            = '1.4.2';
+my  $MBGET_USAGE        =
 'usage : mbtget [-hvdsf] [-2c]
                [-u unit_id] [-a address] [-n number_value]
                [-r[12347]] [-w5 bit_value] [-w6 word_value]
@@ -92,7 +93,7 @@ my $opt_hex_value                               = 0;
 # parse command line args
 while(defined($_ = shift @ARGV)) {
   /^-h$/   and do {print $MBGET_USAGE."\n"; exit 0;};
-  /^-v$/   and do {print 'version: '.$MBGET_VERSION."\n"; exit 0;};
+  /^-v$/   and do {print 'version: '.$VERSION."\n"; exit 0;};
   /^-d$/   and do {$opt_dump_mode = 1; next;};
   /^-s$/   and do {$opt_script_mode = 1; next;};
   /^-2c$/  and do {$opt_2c = 1; next;};

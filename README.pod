@@ -1,0 +1,100 @@
+=head1 NAME
+
+mbtget - Simple perl script for make some modbus transaction from the command line.
+
+=head1 DESCRIPTION
+
+Modbus is a standard serial communication protocol used to interconnect industrial
+PLC (and a lot of other things). This module gives you access to TCP and RTU
+version of this protocol, through the MBclient object.
+
+You can have a look at http://en.wikipedia.org/wiki/Modbus for details.
+
+=head1 INSTALL
+
+You can install this module from:
+
+GitHub:
+
+    git clone https://github.com/sourceperl/mbtget.git
+    cd mbtget
+    perl Makefile.PL
+    make
+    sudo make install
+
+=head1 DEPENDENCIES
+
+This script requires no other module or librarie.
+
+It's pure Perl code without any extension.
+
+=head1 USAGE
+
+=head2 read mbtget help
+
+    pi@raspberrypi ~ $ mbtget -h
+
+=head2 read a word data at address 1000 on modbus server 127.0.0.1
+
+    pi@raspberrypi ~ $ mbtget -a 1000 127.0.0.1
+
+    values:
+    1 (ad 01000): 52544
+
+=head2 read 10 words data at address 1000 on modbus server plc-1.domaine.net
+
+    pi@raspberrypi ~ $ mbtget -n 10 -a 1000 plc-1.domaine.net
+
+    values:
+    1 (ad 01000): 52544
+    2 (ad 01001): 33619
+    3 (ad 01002): 61010
+    4 (ad 01003): 11878
+    5 (ad 01004): 60142
+    6 (ad 01005): 21714
+    7 (ad 01006): 14182
+    8 (ad 01007): 64342
+    9 (ad 01008): 18511
+    10 (ad 01009): 59909
+
+=head2 write a word value of 333 at address 1000 on modbus server 127.0.0.1 with dump mode active
+
+    pi@raspberrypi ~ $ mbtget -w6 333 -a 1000 -d 127.0.0.1
+    Tx
+    [10 01 00 00 00 06 01] 06 03 E8 01 4D
+    Rx
+    [10 01 00 00 00 06 01] 06 03 E8 01 4D
+
+    word write ok
+
+=head1 BUGS
+
+Thanks to report issues at https://github.com/sourceperl/mbtget/issues
+
+=head1 AUTHOR
+
+Loic Lefebvre, E<lt>lle@cpan.orgE<gt>
+
+=head1 COPYRIGHT & LICENSE
+
+Copyright 2014 Loic Lefebvre
+
+The MIT License (MIT)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
