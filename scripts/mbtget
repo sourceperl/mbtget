@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 
 # Client ModBus / TCP class 1
-#     Version: 1.4.3
+#     Version: 1.5.0
 #     Website: https://github.com/sourceperl/mbtget
 #              http://source.perl.free.fr (in french)
 #        Date: 30/10/2014
@@ -11,23 +11,15 @@
 #              1,2,4,5,6 (Class 1)
 #     Charset: us-ascii, unix end of line
 
-# changelog
-# 1.4.3: change two's complement decoding
-# 1.4.2: add Makefile.PL for easy install on all perl platforms
-# 1.4.1: better response handling for malformed responses
-#        (see joswr1ght pull request #1)
-# 1.4.0: add "-2c" for set "two's complement" mode (neg. value) on reads regs
-# 1.3.0: comment and "-h" text is now in english
-# 1.2.0: changing headers for the source code publication
-# 1.1.4: added \ - the regular expression hostname (remote hosts as "exp-1.dom")
-
 # TODO: 1,2,3 and 4 functions: check the number of words received
 
 use strict;
-use Socket;
+use IO::Socket;
+use IO::Select;
+use Socket qw(getaddrinfo);
 
 # constant
-our $VERSION            = '1.4.3';
+our $VERSION            = '1.5.0';
 my  $MBGET_USAGE        =
 'usage : mbtget [-hvdsf] [-2c]
                [-u unit_id] [-a address] [-n number_value]
@@ -90,6 +82,27 @@ my $opt_2c                                      = 0;
 my $opt_ieee                                    = 0;
 my $opt_hex_ad                                  = 0;
 my $opt_hex_value                               = 0;
+
+# build IPv4/v6 regexp
+my $IPv4 = "((25[0-5]|2[0-4][0-9]|[0-1]?[0-9]{1,2})[.](25[0-5]|2[0-4][0-9]|".
+           "[0-1]?[0-9]{1,2})[.](25[0-5]|2[0-4][0-9]|[0-1]?[0-9]{1,2})".
+           "[.](25[0-5]|2[0-4][0-9]|[0-1]?[0-9]{1,2}))";
+my $G = "[0-9a-fA-F]{1,4}";
+
+my @tail = ( ":",
+             "(:($G)?|$IPv4)",
+             ":($IPv4|$G(:$G)?|)",
+             "(:$IPv4|:$G(:$IPv4|(:$G){0,2})|:)",
+             "((:$G){0,2}(:$IPv4|(:$G){1,2})|:)",
+             "((:$G){0,3}(:$IPv4|(:$G){1,2})|:)",
+             "((:$G){0,4}(:$IPv4|(:$G){1,2})|:)" );
+
+my $IPv4_re = qr/$IPv4/;
+my $IPv6_re = $G;
+$IPv6_re = "$G:($IPv6_re|$_)" for @tail;
+$IPv6_re = qq/:(:$G){0,5}((:$G){1,2}|:$IPv4)|$IPv6_re/;
+$IPv6_re =~ s/\(/(?:/g;
+$IPv6_re = qr/$IPv6_re/;
 
 # parse command line args
 while(defined($_ = shift @ARGV)) {
@@ -190,7 +203,7 @@ while(defined($_ = shift @ARGV)) {
     }
   };
   ## hostname or IP of the server
-  (/^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/ or /^[a-z][a-z0-9\.\-]+$/) and do {
+  (/^$IPv6_re$/ or /^$IPv4_re$/ or /^[a-z][a-z0-9\.\-]+$/) and do {
     $opt_server = $_;
     next;
   };
@@ -214,22 +227,32 @@ if ($opt_ieee) {
       exit 1;
   }
 }
-# DNS resolve
-my $server_ip = inet_aton($opt_server);
-if (!$server_ip) {
-  print STDERR 'unable to resolve "'.$opt_server.'"'."\n";
+
+# *** network exchange ***
+# DNS resolve, open TCP socket
+my %hints = (socktype => SOCK_STREAM);
+my ($err, @res) = getaddrinfo($opt_server, ($opt_server_port, \%hints));
+if ($err) {
+  print STDERR "Cannot getaddrinfo - $err - server: $opt_server\n";
   exit 1;
 }
 
-# *** network exchange ***
-# open TCP socket
-socket(SERVER, PF_INET, SOCK_STREAM, getprotobyname('tcp'));
-connect(SERVER, sockaddr_in($opt_server_port, $server_ip))
-or do {
-  print STDERR 'server connect "'.$opt_server.':'.
-               $opt_server_port.'" failed'."\n";
+my $server;
+
+foreach my $ai (@res) {
+  my $candidate = IO::Socket->new();
+  $candidate->socket($ai->{family}, $ai->{socktype}, $ai->{protocol}) or next;
+  $candidate->connect($ai->{addr}) or next;
+  $server = $candidate;
+  last;
+}
+
+if (! $server) {
+  print STDERR 'server connect ['.$opt_server.']:'.
+               $opt_server_port.' failed'."\n";
   exit 2;
-};
+}
+
 # build a request
 # header
 my $tx_buffer;
@@ -269,34 +292,36 @@ if (($opt_mb_fc == $READ_COILS) ||
                                $tx_bd_word_value);
 }
 # send request
-send(SERVER, $tx_buffer, 0);
+send($server, $tx_buffer, 0);
 # dump manager
 dump_frame('Tx', $tx_buffer) if ($opt_dump_mode);
 # response wait
-if (!can_read('SERVER', $opt_timeout)) {
-  close SERVER;
+my $s = IO::Select->new();
+$s->add($server);
+if (!$s->can_read($opt_timeout)) {
+  close $server;
   print STDERR 'receive timeout'."\n";
   exit 1;
 }
 # receive header
 my ($rx_frame, $rx_buffer, $rx_body, $rx_hd_tr_id, $rx_hd_pr_id, $rx_hd_length, $rx_hd_unit_id,
     $rx_bd_fc, $rx_bd_bc, $rx_bd_data, @rx_disp_data);
-recv(SERVER, $rx_buffer, 7, 0); $rx_frame = $rx_buffer;
+recv($server, $rx_buffer, 7, 0); $rx_frame = $rx_buffer;
 # header decoding
 ($rx_hd_tr_id, $rx_hd_pr_id, $rx_hd_length, $rx_hd_unit_id) = unpack "nnnC", $rx_buffer;
 # is header correct ?
 if (!(($rx_hd_tr_id || $rx_hd_pr_id || $rx_hd_length || $rx_hd_unit_id) &&
       ($rx_hd_tr_id == $tx_hd_tr_id) && ($rx_hd_pr_id == 0) &&
       ($rx_hd_length < 256) && ($rx_hd_unit_id == $tx_hd_unit_id))) {
-  close SERVER;
+  close $server;
   dump_frame('Rx', $rx_frame) if ($opt_dump_mode);
   print STDERR 'error in receive frame'."\n";
   exit 1;
 }
 # receive body
-recv(SERVER, $rx_buffer, $rx_hd_length-1, 0);
+recv($server, $rx_buffer, $rx_hd_length-1, 0);
 $rx_frame .= $rx_buffer;
-close SERVER;
+close $server;
 # dump manager
 dump_frame('Rx', $rx_frame) if ($opt_dump_mode);
 # body decoding
@@ -318,7 +343,7 @@ if ($rx_bd_fc > 0x80) {
     $#rx_disp_data = $opt_mb_nb - 1;
     disp_data(@rx_disp_data);
   } elsif (($opt_mb_fc == $READ_HOLDING_REGISTERS) ||
-            ($opt_mb_fc == $READ_INPUT_REGISTERS)) {
+           ($opt_mb_fc == $READ_INPUT_REGISTERS)) {
   ## read word
     my $rx_read_word_data;
     ($rx_bd_bc, $rx_read_word_data) = unpack "Ca*", $rx_body;
@@ -411,10 +436,6 @@ sub disp_data {
   }
 }
 
-# wait $timeout for socket data (return true if data available before timeout)
-sub can_read {
-  my ($sock_handle, $timeout) = @_;
-  my $hdl_select = "";
-  vec($hdl_select, fileno($sock_handle), 1) = 1;
-  return (select($hdl_select, undef, undef, $timeout) == 1);
-}
+1;
+
+__END__
