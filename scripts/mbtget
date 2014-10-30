@@ -1,10 +1,10 @@
 #!/usr/bin/perl -w
 
 # Client ModBus / TCP class 1
-#     Version: 1.4.2
+#     Version: 1.4.3
 #     Website: https://github.com/sourceperl/mbtget
 #              http://source.perl.free.fr (in french)
-#        Date: 29/10/2014
+#        Date: 30/10/2014
 #     License: MIT
 # Description: Client ModBus / TCP command line
 #              Support functions 3 and 16 (class 0)
@@ -12,6 +12,7 @@
 #     Charset: us-ascii, unix end of line
 
 # changelog
+# 1.4.3: change two's complement decoding
 # 1.4.2: add Makefile.PL for easy install on all perl platforms
 # 1.4.1: better response handling for malformed responses
 #        (see joswr1ght pull request #1)
@@ -26,7 +27,7 @@ use strict;
 use Socket;
 
 # constant
-our $VERSION            = '1.4.2';
+our $VERSION            = '1.4.3';
 my  $MBGET_USAGE        =
 'usage : mbtget [-hvdsf] [-2c]
                [-u unit_id] [-a address] [-n number_value]
@@ -331,7 +332,7 @@ if ($rx_bd_fc > 0x80) {
       @rx_disp_data = unpack 'n*', $rx_read_word_data;
       # if two's complement set (-2c mode) ! not compatible with hex display
       if ($opt_2c and !$opt_hex_value) {
-        $_ -= ($_ & 1<<15) <<1 for (@rx_disp_data);
+        $_ -= ($_ & 2**15) *2 for (@rx_disp_data);
       }
       disp_data(@rx_disp_data);
     }
