@@ -3,7 +3,6 @@
 # Client ModBus / TCP class 1
 #     Version: 1.5.0
 #     Website: https://github.com/sourceperl/mbtget
-#              http://source.perl.free.fr (in french)
 #        Date: 30/10/2014
 #     License: MIT
 # Description: Client ModBus / TCP command line
